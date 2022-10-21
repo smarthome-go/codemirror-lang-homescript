@@ -1,26 +1,191 @@
-@top Program { expression* }
+@precedence {
+    pair @right,
+    member,
+    call,
+    unary @left,
+    binary_exp @right,
+    cast @left,
+    binary_times @left,
+    binary_plus @left,
+    binary_relation @left,
+    binary_equality @left,
+    logical_and @left,
+    logical_or @left,
+    assign @right
+}
 
-@skip { space | LineComment }
+@top Program {
+  (statement ";")*
+}
+
+statement {
+  LetStmt |
+  ImportStmt |
+  BreakStmt |
+  ContinueStmt |
+  ReturnStmt |
+  expression
+}
+
+LetStmt {
+  kw<"let"> Ident ("=" expression)?
+}
+
+ImportStmt {
+  kw<"import"> Ident (kw<"as"> Ident)? kw<"from"> Ident
+}
+
+BreakStmt {
+  kw<"break"> expression?
+}
+
+ReturnStmt {
+  kw<"return"> expression?
+}
 
 expression {
-  Identifier |
+  Number |
+  Bool |
   String |
-  Boolean |
-  Application { "(" expression* ")" }
+  PairExpr |
+  kw<"null"> |
+  VariableName |
+  IfExpr |
+  ForExpr |
+  WhileExpr |
+  LoopExpr |
+  FnExpr |
+  TryExpr |
+  ParenExpr |
+  PrefixExpr |
+  InfixExpr |
+  MemberExpr |
+  CallExpr |
+  AssignExpr |
+  CastExpr
 }
+
+PairExpr {
+  !pair String "=>" expression
+}
+
+PrefixExpr {
+  !unary ("+" | "-" | "!") expression
+}
+
+InfixExpr {
+  (expression !logical_or "||" expression) |
+  (expression !logical_and "&&" expression) |
+  (expression !binary_equality "==" expression) |
+  (expression !binary_equality "!=" expression) |
+  (expression !binary_relation "<" expression) |
+  (expression !binary_relation "<=" expression) |
+  (expression !binary_relation ">" expression) |
+  (expression !binary_relation ">=" expression) |
+  (expression !binary_plus "+" expression) |
+  (expression !binary_plus "-" expression) |
+  (expression !binary_times "*" expression) |
+  (expression !binary_times "/" expression) |
+  (expression !binary_times "%" expression) |
+  (expression !binary_exp "**" expression)
+}
+
+MemberExpr {
+  expression !member "." Property
+}
+
+Property { word }
+
+CallExpr {
+  expression !call Arguments
+}
+
+Arguments {
+  "(" (expression ("," expression)*)? ")"
+}
+
+AssignExpr {
+  expression !assign ("=" | "*=" | "/=" | "%=" | "+=" | "-=" | "**=") expression
+}
+
+CastExpr {
+  expression !cast kw<"as"> Type
+}
+
+Block {
+  "{" (statement (";" statement)* ";"?)? "}"
+}
+
+IfExpr {
+  kw<"if"> expression Block (kw<"else"> (IfExpr | Block))?
+}
+
+ForExpr {
+  kw<"for"> Ident kw<"in"> expression ".." expression Block
+}
+
+WhileExpr {
+  kw<"while"> expression Block
+}
+
+LoopExpr {
+  kw<"loop"> Block
+}
+
+FnExpr {
+  kw<"fn"> Ident? Parameters Block
+}
+
+Parameters {
+  "(" (Ident ("," Ident)*)? ")"
+}
+
+TryExpr {
+  kw<"try"> Block kw<"catch"> Ident Block
+}
+
+ParenExpr {
+  "(" expression ")"
+}
+
+Bool {
+  @specialize[@name=Bool]<Ident, "true" | "false" | "on" | "off">
+}
+
+Type {
+  @specialize[@name=Type]<Ident, "str" | "bool" | "num"> | kw<"null">
+}
+
+ContinueStmt {
+  kw<"continue">
+}
+
+@skip { token_1 | Comment }
 
 @tokens {
-  Identifier { $[a-zA-Z_\-0-9]+ }
+  token_1 {
+    " " | "\n" | "\t" | "\r"
+  }
+  Number {
+    $[0-9]+ ("\." $[0-9]+)?
+  }
+  word { $[a-zA-Z_] $[a-zA-Z0-9_]* }
+  Ident { word }
+  String {
+    '"' (![\\"] | "\\" _)* '"'? |
+    "'" (![\\'] | "\\" _)* "'"?
+  }
+  Comment {
+    "#" ![\n]*
+  }
 
-  String { '"' (!["\\] | "\\" _)* '"' }
-
-  Boolean { "#t" | "#f" }
-
-  LineComment { ";" ![\n]* }
-
-  space { $[ \t\n\r]+ }
-
-  "(" ")"
+  "." "," ";"
+  "(" ")" "{" "}"
 }
 
-@detectDelim
+kw<term> { @specialize[@name={term}]<Ident, term> }
+
+BuiltinFunc { @specialize[@name=BuiltinFunc]<Ident, "exit" | "throw" | "assert" | "print" | "sleep" | "switch_on" | "switch" | "notify" | "log" | "exec" | "get" | "http"> }
+BuiltinVar { @specialize[@name=BuiltinVar]<Ident, "user" | "weather" | "time"> }
+
+VariableName { BuiltinFunc | BuiltinVar | Ident }
