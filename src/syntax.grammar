@@ -47,6 +47,7 @@ expression {
   Number |
   Bool |
   String |
+  "[" expression "]" |
   PairExpr |
   kw<"null"> |
   VariableName |
@@ -92,6 +93,7 @@ InfixExpr {
 
 MemberExpr {
   expression !member "." Property
+  | expression "[" expression "]"
 }
 
 Property { word }
