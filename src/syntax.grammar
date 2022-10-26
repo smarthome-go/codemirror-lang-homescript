@@ -47,7 +47,7 @@ expression {
   Number |
   Bool |
   String |
-  "[" expression "]" |
+  "[" ( expression ( "," expression )* ","? )? "]" |
   PairExpr |
   kw<"null"> |
   VariableName |
