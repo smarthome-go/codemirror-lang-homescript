@@ -61,6 +61,7 @@ expression {
   PrefixExpr |
   InfixExpr |
   MemberExpr |
+  IndexExpr |
   CallExpr |
   AssignExpr |
   CastExpr
@@ -93,7 +94,10 @@ InfixExpr {
 
 MemberExpr {
   expression !member "." Property
-  | expression "[" expression "]"
+}
+
+IndexExpr {
+  expression "[" expression "]"
 }
 
 Property { word }
@@ -182,7 +186,7 @@ ContinueStmt {
   }
 
   "." "," ";"
-  "(" ")" "{" "}"
+  "(" ")" "{" "}" "[" "]"
 }
 
 kw<term> { @specialize[@name={term}]<Ident, term> }

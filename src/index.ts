@@ -40,7 +40,7 @@ export const HomescriptLanguage = LRLanguage.define({
                 '|| &&': t.logicOperator,
                 '< <= > >= "!=" ==': t.compareOperator,
                 '=': t.definitionOperator,
-                '( ) { }': t.bracket,
+                '( ) { } [ ]': t.bracket,
                 '. , ;': t.separator,
                 BuiltinFunc: t.standard(t.function(t.variableName)),
                 BuiltinVar: t.standard(t.variableName),
