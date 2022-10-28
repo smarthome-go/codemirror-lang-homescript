@@ -47,7 +47,8 @@ expression {
   Number |
   Bool |
   String |
-  "[" ( expression ( "," expression )* ","? )? "]" |
+  ListExpr |
+  ObjExpr |
   PairExpr |
   kw<"null"> |
   VariableName |
@@ -65,6 +66,18 @@ expression {
   CallExpr |
   AssignExpr |
   CastExpr
+}
+
+ObjExpr {
+    "{" ( ObjField ( "," ObjField )* (",")? )? "}"
+}
+
+ObjField {
+    Property ':' expression
+}
+
+ListExpr {
+  "[" ( expression ( "," expression )* ","? )? "]"
 }
 
 PairExpr {
