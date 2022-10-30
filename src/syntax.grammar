@@ -204,7 +204,7 @@ ContinueStmt {
 
 kw<term> { @specialize[@name={term}]<Ident, term> }
 
-BuiltinFunc { @specialize[@name=BuiltinFunc]<Ident, "exit" | "throw" | "assert" | "print" | "println" | "sleep" | "switch_on" | "switch" | "notify" | "log" | "exec" | "get" | "http"> }
+BuiltinFunc { @specialize[@name=BuiltinFunc]<Ident, "exit" | "throw" | "assert" | "print" | "println" | "ping" | "switch_on" | "switch" | "notify" | "log" | "exec" | "get" | "http"> }
 BuiltinVar { @specialize[@name=BuiltinVar]<Ident, "user" | "weather" | "time"> }
 
 VariableName { BuiltinFunc | BuiltinVar | Ident }
