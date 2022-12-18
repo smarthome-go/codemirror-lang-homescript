@@ -1,8 +1,9 @@
 {
   "name": "codemirror-lang-homescript",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Homescript language support for CodeMirror",
   "author": "RubixDev",
+  "contributorsa": ["MikMuellerDev"],
   "license": "GPL-3.0-only",
   "scripts": {
     "prepare": "rollup -c",
