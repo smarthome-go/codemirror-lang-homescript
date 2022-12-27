@@ -1,6 +1,6 @@
 {
   "name": "codemirror-lang-homescript",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Homescript language support for CodeMirror",
   "author": "RubixDev",
   "contributorsa": ["MikMuellerDev"],
