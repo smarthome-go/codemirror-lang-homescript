@@ -45,6 +45,7 @@ ReturnStmt {
 
 expression {
   Number |
+  Range |
   Bool |
   String |
   ListExpr |
@@ -140,7 +141,7 @@ IfExpr {
 }
 
 ForExpr {
-  kw<"for"> Ident kw<"in"> expression ".." expression Block
+  kw<"for"> Ident kw<"in"> expression Block
 }
 
 WhileExpr {
@@ -169,6 +170,10 @@ ParenExpr {
 
 Bool {
   @specialize[@name=Bool]<Ident, "true" | "false" | "on" | "off">
+}
+
+Range {
+    Number ".." Number
 }
 
 Type {
