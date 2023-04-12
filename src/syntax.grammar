@@ -49,6 +49,8 @@ expression {
   Bool |
   String |
   ListExpr |
+  EnumDefinition |
+  EnumVariant |
   ObjExpr |
   PairExpr |
   kw<"null"> |
@@ -76,6 +78,20 @@ ObjExpr {
 ObjField {
     Property ':' expression
 }
+
+EnumInner {
+    Ident ("," Ident)* ","?
+}
+
+EnumDefinition {
+    kw<"enum"> Ident "{" EnumInner "}"
+}
+
+EnumVariant {
+    EnumVariantBase "::" Ident
+}
+
+EnumVariantBase { Ident }
 
 ListExpr {
   "[" ( expression ( "," expression )* ","? )? "]"
