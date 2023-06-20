@@ -1,9 +1,8 @@
 {
   "name": "codemirror-lang-homescript",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Homescript language support for CodeMirror",
-  "author": "RubixDev",
-  "contributorsa": ["MikMuellerDev"],
+  "author": "MikMuellerDev",
   "license": "GPL-3.0-only",
   "scripts": {
     "prepare": "rollup -c",
@@ -19,6 +18,7 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
+    "@codemirror/autocomplete": "^6.8.0",
     "@codemirror/language": "^6.2.1",
     "@lezer/highlight": "^1.1.2",
     "@lezer/lr": "^1.2.3"

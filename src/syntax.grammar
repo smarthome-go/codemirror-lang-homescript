@@ -1,231 +1,288 @@
+@skip { skip_token | LineComment | BlockComment }
 @precedence {
-    pair @right,
-    member,
+    return,
+    comment,
     call,
-    unary @left,
-    binary_exp @right,
-    cast @left,
-    binary_times @left,
-    binary_plus @left,
-    binary_relation @left,
-    binary_equality @left,
-    logical_and @left,
-    logical_or @left,
+    exprwithblock,
+    range @right,
+    member @right,
+    prefix @right,
+    infix @left,
     assign @right
 }
 
 @top Program {
-  (statement ";")*
+    (Item)*
 }
 
-statement {
-  LetStmt |
-  ImportStmt |
-  BreakStmt |
-  ContinueStmt |
-  ReturnStmt |
-  expression
+Item {
+    ImportItem |
+    TypeDefinition |
+    (kw<"pub">)? LetStatement |
+    (kw<"pub">)? FunctionDefinition
 }
 
-LetStmt {
-  kw<"let"> Ident ("=" expression)?
+ImportItem {
+    kw<"import"> ( Ident | ("{" Ident ( "," Ident )* (",")? "}") ) kw<"from"> Module ";"
 }
 
-ImportStmt {
-  kw<"import"> Ident (kw<"as"> Ident)? kw<"from"> Ident
+TypeDefinition {
+    kw<"type"> Ident "=" Type ";"
 }
 
-BreakStmt {
-  kw<"break"> expression?
-}
-
-ReturnStmt {
-  kw<"return"> expression?
-}
-
-expression {
-  Number |
-  Range |
-  Bool |
-  String |
-  ListExpr |
-  EnumDefinition |
-  EnumVariant |
-  ObjExpr |
-  PairExpr |
-  kw<"null"> |
-  VariableName |
-  IfExpr |
-  ForExpr |
-  WhileExpr |
-  LoopExpr |
-  FnExpr |
-  TryExpr |
-  ParenExpr |
-  PrefixExpr |
-  InfixExpr |
-  MemberExpr |
-  IndexExpr |
-  CallExpr |
-  AssignExpr |
-  CastExpr
-}
-
-ObjExpr {
-    "{" ( ObjField ( "," ObjField )* (",")? )? "}"
-}
-
-ObjField {
-    Property ':' expression
-}
-
-EnumInner {
-    Ident ("," Ident)* ","?
-}
-
-EnumDefinition {
-    kw<"enum"> Ident "{" EnumInner "}"
-}
-
-EnumVariant {
-    EnumVariantBase "::" Ident
-}
-
-EnumVariantBase { Ident }
-
-ListExpr {
-  "[" ( expression ( "," expression )* ","? )? "]"
-}
-
-PairExpr {
-  !pair String "=>" expression
-}
-
-PrefixExpr {
-  !unary ("+" | "-" | "!") expression
-}
-
-InfixExpr {
-  (expression !logical_or "||" expression) |
-  (expression !logical_and "&&" expression) |
-  (expression !binary_equality "==" expression) |
-  (expression !binary_equality "!=" expression) |
-  (expression !binary_relation "<" expression) |
-  (expression !binary_relation "<=" expression) |
-  (expression !binary_relation ">" expression) |
-  (expression !binary_relation ">=" expression) |
-  (expression !binary_plus "+" expression) |
-  (expression !binary_plus "-" expression) |
-  (expression !binary_times "*" expression) |
-  (expression !binary_times "/" expression) |
-  (expression !binary_times "%" expression) |
-  (expression !binary_exp "**" expression)
-}
-
-MemberExpr {
-  expression !member "." Property
-}
-
-IndexExpr {
-  expression "[" expression "]"
-}
-
-Property { word }
-
-CallExpr {
-  expression !call Arguments
-}
-
-Arguments {
-  "(" (expression ("," expression)*)? ")"
-}
-
-AssignExpr {
-  expression !assign ("=" | "*=" | "/=" | "%=" | "+=" | "-=" | "**=") expression
-}
-
-CastExpr {
-  expression !cast kw<"as"> Type
-}
-
-Block {
-  "{" (statement (";" statement)* ";"?)? "}"
-}
-
-IfExpr {
-  kw<"if"> expression Block (kw<"else"> (IfExpr | Block))?
-}
-
-ForExpr {
-  kw<"for"> Ident kw<"in"> expression Block
-}
-
-WhileExpr {
-  kw<"while"> expression Block
-}
-
-LoopExpr {
-  kw<"loop"> Block
-}
-
-FnExpr {
-  kw<"fn"> Ident? Parameters Block
-}
-
-Parameters {
-  "(" (Ident ("," Ident)*)? ")"
-}
-
-TryExpr {
-  kw<"try"> Block kw<"catch"> Ident Block
-}
-
-ParenExpr {
-  "(" expression ")"
-}
-
-Bool {
-  @specialize[@name=Bool]<Ident, "true" | "false" | "on" | "off">
-}
-
-Range {
-    Number ".." Number
+Module {
+    Ident
 }
 
 Type {
-  @specialize[@name=Type]<Ident, "str" | "bool" | "num"> | kw<"null">
+    Word |
+    ("[" Type "]") |
+    ("{" objectTypeFields? "}")
 }
 
-ContinueStmt {
-  kw<"continue">
+objectTypeFields {
+    objectTypeField ("," objectTypeField)* (",")?
 }
 
-@skip { token_1 | Comment }
+objectTypeField {
+    Ident ":" Type
+}
+
+FunctionDefinition {
+    kw<"fn"> Ident Parameters ("->" Type)? Block
+}
+
+Parameters {
+    "(" parameterList? ")"
+}
+
+parameterList {
+    parameter ( "," parameter ) ","?
+}
+
+parameter {
+    Ident ":" Type
+}
+
+Block {
+    "{" (Statement)* Expression? "}"
+}
+
+Statement {
+    TypeDefinition |
+    LetStatement |
+    ReturnStatement |
+    BreakStatement |
+    ContinueStatement |
+    LoopStatement |
+    WhileStatement |
+    ForStatement |
+    ExpressionStatement
+}
+
+LetStatement {
+    kw<"let"> Ident ( ":" Type )? "=" Expression ";"
+}
+
+ReturnStatement {
+    kw<"return"> Expression? ";"
+}
+
+BreakStatement {
+    kw<"break"> ";"
+}
+
+ContinueStatement {
+    kw<"continue"> ";"
+}
+
+LoopStatement {
+    kw<"loop"> Block (";")?
+}
+
+WhileStatement {
+    kw<"while"> Expression Block (";")?
+}
+
+ForStatement {
+    kw<"for"> Ident kw<"in"> Expression Block (";")?
+}
+
+ExpressionStatement {
+    (ExpressionWithoutBlock ";") |
+    (!exprwithblock ExpressionWithBlock (";")?)
+}
+
+Expression {
+    ExpressionWithBlock | ExpressionWithoutBlock
+}
+
+ExpressionWithBlock {
+    Block | IfExpression | TryExpression
+}
+
+IfExpression {
+    kw<"if"> Expression Block ( kw<"else"> Expression Block  )?
+}
+
+TryExpression {
+    kw<"try"> Block kw<"catch"> Ident Block
+}
+
+ExpressionWithoutBlock {
+    Number |
+    Boolean |
+    String |
+    VariableName |
+    kw<"null"> |
+    RangeLiteral |
+    ListLiteral |
+    ObjectLiteral |
+    FunctionLiteral |
+    "(" Expression ")" |
+    PrefixExpression |
+    InfixExpression |
+    AssignExpression |
+    CallExpression |
+    IndexExpression |
+    MemberExpression |
+    CastExpression
+}
+
+Boolean {
+    @specialize[@name=Bool]<Ident, "true" | "false">
+}
+
+RangeLiteral {
+    Expression !range ".." Expression
+}
+
+ListLiteral {
+    "[" ( Expression ( "," Expression )* (",")? )? "]"
+}
+
+ObjectLiteral {
+    kw<"new"> "{" ( objectLiteralField ("," objectLiteralField)* (",")? )? "}"
+}
+
+objectLiteralField {
+    Ident ":" Expression
+}
+
+FunctionLiteral {
+    kw<"fn"> Parameters ( "->" Type )? Block
+}
+
+PrefixExpression {
+    !prefix PrefixOp Expression
+}
+
+InfixExpression {
+    Expression !infix InfixOp Expression
+}
+
+
+AssignExpression {
+    Ident !assign AssignOp Expression
+}
+
+CallExpression {
+    Expression !call "(" callArguments? ")"
+}
+
+callArguments {
+    Expression ( "," Expression )* ","?
+}
+
+MemberExpression {
+    Expression !member "." Ident
+}
+
+IndexExpression {
+    Expression "[" Expression "]"
+}
+
+CastExpression {
+    Expression kw<"as"> Type
+}
 
 @tokens {
-  token_1 {
-    " " | "\n" | "\t" | "\r"
-  }
-  Number {
-    $[0-9]+ ("\." $[0-9]+)?
-  }
-  word { $[a-zA-Z_] $[a-zA-Z0-9_]* }
-  Ident { word }
-  String {
-    '"' (![\\"] | "\\" _)* '"'? |
-    "'" (![\\'] | "\\" _)* "'"?
-  }
-  Comment {
-    "#" ![\n]*
-  }
+    Number {
+        $[0-9]+ ("\." $[0-9]+)?
+    }
 
-  "." "," ";"
-  "(" ")" "{" "}" "[" "]"
+    Word { $[a-zA-Z_] $[a-zA-Z0-9_]* }
+
+    Ident {
+        Word
+    }
+
+    String {
+        '"' (![\\"] | "\\" _)* '"'? |
+        "'" (![\\'] | "\\" _)* "'"?
+    }
+
+    skip_token {
+        " " | "\n" | "\t" | "\r"
+    }
+
+    LineComment {
+        "//" ![\n]*
+    }
+
+    BlockComment { "/*" blockCommentRest }
+    blockCommentRest { ![*] blockCommentRest | "*" blockCommentAfterStar }
+    blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
+
+    InfixOp {
+        "+" |
+        "-" |
+        "*" |
+        "/" |
+        "%" |
+        "**" |
+        "==" |
+        "!=" |
+        "<" |
+        ">" |
+        "<=" |
+        ">=" |
+        "<<" |
+        ">>" |
+        "|" |
+        "&" |
+        "^" |
+        "||" |
+        "&&"
+    }
+
+    AssignOp {
+        "=" |
+        "+=" |
+        "-=" |
+        "*=" |
+        "/=" |
+        "%=" |
+        "**=" |
+        "<<=" |
+        ">>=" |
+        "|=" |
+        "&=" |
+        "^="
+    }
+
+    PrefixOp {
+        "-"
+        | "!"
+    }
+
+    "." "," ";"
+    "(" ")" "{" "}" "[" "]"
+
+    @precedence { LineComment, AssignOp, PrefixOp, InfixOp }
 }
 
 kw<term> { @specialize[@name={term}]<Ident, term> }
 
-BuiltinFunc { @specialize[@name=BuiltinFunc]<Ident, "exit" | "throw" | "assert" | "print" | "println" | "debug" | "ping" | "get_switch" | "switch" | "notify" | "remind" | "log" | "exec" | "get" | "http"> }
-BuiltinVar { @specialize[@name=BuiltinVar]<Ident, "user" | "weather" | "time" | "ARGS"> }
-
-VariableName { BuiltinFunc | BuiltinVar | Ident }
+BuiltinFunc { @specialize[@name=BuiltinFunc]<Ident, "exit" | "throw" | "assert" | "print" | "println" | "debug"> }
+VariableName { BuiltinFunc | Ident }
