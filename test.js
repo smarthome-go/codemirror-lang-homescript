@@ -1,29 +1,12 @@
-import {HomescriptLanguage} from './dist/index.js'
-import {testTree} from "@lezer/generator/test"
+import { testTree } from '@lezer/generator/test'
+import { HomescriptLanguage } from './dist/index.js'
 
-let ast = HomescriptLanguage.parser.parse("fn main() { lol(); }")
-let spec = `
-Program(
-    Item(
-        FunctionDefinition(
-            fn, Ident, Parameters("(",")"), Block(
-                "{",
-                    Statement(
-                        ExpressionStatement(
-                            ExpressionWithoutBlock(
-                                CallExpression(
-                                    Expression(
-                                        ExpressionWithoutBlock(VariableName(Ident))
-                                    ), "(",")
-                                ")
-                            ),";"
-                        )
-                    ),
-                "}"
-            )
-        )
-    )
-)
-`
+let ast = HomescriptLanguage.parser.parse(`
+let a  = -1 - test + last;
+`)
 
-testTree(ast, spec)
+let spec = ``
+
+// testTree(ast, spec);
+
+console.log(`${ast}`)

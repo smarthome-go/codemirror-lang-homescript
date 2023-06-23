@@ -1,13 +1,20 @@
-@skip { skip_token | LineComment | BlockComment }
 @precedence {
     return,
-    comment,
     call,
     exprwithblock,
-    range @right,
-    member @right,
-    prefix @right,
-    infix @left,
+    member,
+    power @right,
+    prefix,
+    logicalor @left,
+    logicaland @left,
+    range @left,
+    multiply @left,
+    plus @left,
+    shift @left,
+    bitand @left,
+    bitxor @left,
+    bitor @left,
+    compare @left,
     assign @right
 }
 
@@ -17,13 +24,32 @@
 
 Item {
     ImportItem |
-    TypeDefinition |
-    (kw<"pub">)? LetStatement |
-    (kw<"pub">)? FunctionDefinition
+    LetStatement |
+    FunctionDefinition |
+    PubItem
+}
+
+PubItem {
+    kw<"pub"> ( TypeDefinition | LetStatement | FunctionDefinition )
 }
 
 ImportItem {
-    kw<"import"> ( Ident | ("{" Ident ( "," Ident )* (",")? "}") ) kw<"from"> Module ";"
+    kw<"import">
+
+    (
+        ImportItemCanditate  |
+        ( "{" ImportItemCanditate ( ',' ImportItemCanditate )* ','? "}" )
+    )
+
+    kw<"from"> Module ";"
+}
+
+ImportItemCanditate {
+    (kw<"type"> TypeImport | Ident)
+}
+
+TypeImport {
+    Ident
 }
 
 TypeDefinition {
@@ -35,37 +61,46 @@ Module {
 }
 
 Type {
-    Word |
-    ("[" Type "]") |
+    identType |
+    listType |
+    objectType |
+    optionType
+}
+
+identType {
+    Word
+}
+
+listType {
+    ("[" Type "]")
+}
+
+objectType {
     ("{" objectTypeFields? "}")
 }
 
 objectTypeFields {
-    objectTypeField ("," objectTypeField)* (",")?
+    "?" | objectTypeField ("," objectTypeField)* (",")?
 }
 
 objectTypeField {
-    Ident ":" Type
+    (Ident | String) ":" Type
+}
+
+optionType {
+    QuestionMark Type
 }
 
 FunctionDefinition {
-    kw<"fn"> Ident Parameters ("->" Type)? Block
+    kw<"fn"> Ident Parameters ( "->" Type )? Block
 }
 
 Parameters {
-    "(" parameterList? ")"
-}
-
-parameterList {
-    parameter ( "," parameter ) ","?
-}
-
-parameter {
-    Ident ":" Type
+    "(" (Ident ":" Type ("," Ident ":" Type )*)? ")"
 }
 
 Block {
-    "{" (Statement)* Expression? "}"
+    "{" (Statement)* (Expression)? "}"
 }
 
 Statement {
@@ -114,15 +149,18 @@ ExpressionStatement {
 }
 
 Expression {
-    ExpressionWithBlock | ExpressionWithoutBlock
+    ExpressionWithBlock |
+    ExpressionWithoutBlock
 }
 
 ExpressionWithBlock {
-    Block | IfExpression | TryExpression
+    Block |
+    IfExpression |
+    TryExpression
 }
 
 IfExpression {
-    kw<"if"> Expression Block ( kw<"else"> Expression Block  )?
+  kw<"if"> Expression Block (kw<"else"> ( IfExpression | Block ))?
 }
 
 TryExpression {
@@ -135,12 +173,13 @@ ExpressionWithoutBlock {
     String |
     VariableName |
     kw<"null"> |
-    RangeLiteral |
+    kw<"none"> |
     ListLiteral |
     ObjectLiteral |
     FunctionLiteral |
     "(" Expression ")" |
     PrefixExpression |
+    RangeExpression |
     InfixExpression |
     AssignExpression |
     CallExpression |
@@ -150,11 +189,7 @@ ExpressionWithoutBlock {
 }
 
 Boolean {
-    @specialize[@name=Bool]<Ident, "true" | "false">
-}
-
-RangeLiteral {
-    Expression !range ".." Expression
+    @specialize[@name=Boolean]<Ident, "true" | "false">
 }
 
 ListLiteral {
@@ -162,11 +197,15 @@ ListLiteral {
 }
 
 ObjectLiteral {
-    kw<"new"> "{" ( objectLiteralField ("," objectLiteralField)* (",")? )? "}"
+    kw<"new"> "{" objectLiteralFields? "}"
+}
+
+objectLiteralFields {
+    "?" | objectLiteralField ("," objectLiteralField)* (",")?
 }
 
 objectLiteralField {
-    Ident ":" Expression
+    (Ident | String) ":" Expression
 }
 
 FunctionLiteral {
@@ -174,21 +213,35 @@ FunctionLiteral {
 }
 
 PrefixExpression {
-    !prefix PrefixOp Expression
+    !prefix ( Minus | Not | QuestionMark ) Expression
 }
 
 InfixExpression {
-    Expression !infix InfixOp Expression
+    Expression !bitor BitOr Expression |
+    Expression !bitxor BitXor Expression |
+    Expression !bitand BitAnd Expression |
+    Expression !shift ( ShiftLeft | ShiftRight ) Expression |
+    Expression !plus ( Plus | Minus ) Expression |
+    Expression !multiply ( Multiply | Divide | Modulo ) Expression |
+    Expression !power Power Expression |
+    Expression !logicaland LogicalAnd Expression |
+    Expression !logicalor LogicalOr Expression |
+    Expression !compare ( Equal | NotEqual | LessThan | LessThanEqual | GreaterThan | GreaterThanEqual ) Expression
 }
 
+RangeExpression {
+    Expression !range Range Expression
+}
 
 AssignExpression {
-    Ident !assign AssignOp Expression
+    Expression !assign AssignOp Expression
 }
 
 CallExpression {
-    Expression !call "(" callArguments? ")"
+    CallBase !call "(" callArguments? ")"
 }
+
+CallBase { Expression }
 
 callArguments {
     Expression ( "," Expression )* ","?
@@ -205,6 +258,8 @@ IndexExpression {
 CastExpression {
     Expression kw<"as"> Type
 }
+
+@skip { skip_token | LineComment | BlockComment }
 
 @tokens {
     Number {
@@ -226,35 +281,11 @@ CastExpression {
         " " | "\n" | "\t" | "\r"
     }
 
-    LineComment {
-        "//" ![\n]*
-    }
+    LineComment { "//" ![\n]* }
 
     BlockComment { "/*" blockCommentRest }
     blockCommentRest { ![*] blockCommentRest | "*" blockCommentAfterStar }
     blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
-
-    InfixOp {
-        "+" |
-        "-" |
-        "*" |
-        "/" |
-        "%" |
-        "**" |
-        "==" |
-        "!=" |
-        "<" |
-        ">" |
-        "<=" |
-        ">=" |
-        "<<" |
-        ">>" |
-        "|" |
-        "&" |
-        "^" |
-        "||" |
-        "&&"
-    }
 
     AssignOp {
         "=" |
@@ -271,15 +302,36 @@ CastExpression {
         "^="
     }
 
-    PrefixOp {
-        "-"
-        | "!"
-    }
+    Not { "!" }
+    Plus { "+" }
+    Minus { "-" }
+
+    Multiply { "*" }
+    Divide { "/" }
+    Modulo { "%" }
+    Power { "**" }
+
+    Equal { "==" }
+    NotEqual { "!=" }
+    LessThan { "<" }
+    LessThanEqual { "<=" }
+    GreaterThan { ">" }
+    GreaterThanEqual { ">=" }
+
+    ShiftLeft { "<<" }
+    ShiftRight { ">>" }
+    BitOr { "|" }
+    BitAnd { "&" }
+    BitXor { "^" }
+    LogicalOr { "||" }
+    LogicalAnd { "&&" }
+    Range { ".." }
+    QuestionMark { "?" }
 
     "." "," ";"
     "(" ")" "{" "}" "[" "]"
 
-    @precedence { LineComment, AssignOp, PrefixOp, InfixOp }
+    @precedence { LineComment, Divide }
 }
 
 kw<term> { @specialize[@name={term}]<Ident, term> }
