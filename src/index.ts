@@ -26,7 +26,7 @@ export const HomescriptLanguage = LRLanguage.define({
                 'pub': t.modifier,
                 'import from': t.moduleKeyword,
                 'ImportItem/Module/Ident': t.namespace,
-                'ImportItem/ImportItemCanditate/Ident': t.namespace,
+                // 'ImportItem/ImportItemCanditate/Ident': t.namespace,
                 'ImportItem/ImportItemCanditate/TypeImport/Ident': t.typeName,
                 'TypeDefinition/Ident': t.namespace,
                 'FunctionDefinition/Ident': t.function(t.variableName),
