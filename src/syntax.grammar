@@ -92,7 +92,7 @@ optionType {
 }
 
 FunctionDefinition {
-    kw<"fn"> Ident Parameters ( "->" Type )? Block
+    kw<"fn"> Ident Parameters ( Arrow Type )? Block
 }
 
 Parameters {
@@ -346,6 +346,8 @@ PrefixOp {
     LogicalAnd { "&&" }
     Range { ".." }
     QuestionMark { "?" }
+    Arrow { "->" }
+    FatArrow { "=>" }
 
     "." "," ";"
     "(" ")" "{" "}" "[" "]"
