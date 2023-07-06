@@ -20,7 +20,7 @@ export const HomescriptLanguage = LRLanguage.define({
                 Application: foldInside,
             }),
             styleTags({
-                'for while loop if else try catch return break continue': t.controlKeyword,
+                'for while loop if else match try catch return break continue': t.controlKeyword,
                 'in new': t.operatorKeyword,
                 'let fn type': t.definitionKeyword,
                 'pub': t.modifier,
@@ -72,6 +72,7 @@ export const HomescriptCompletion = HomescriptLanguage.data.of({
         { label: 'continue', type: 'keyword' },
         { label: 'if', type: 'keyword' },
         { label: 'else', type: 'keyword' },
+        { label: 'match', type: 'keyword' },
         { label: 'loop', type: 'keyword' },
         { label: 'while', type: 'keyword' },
         { label: 'for', type: 'keyword' },

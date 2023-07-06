@@ -156,6 +156,7 @@ Expression {
 ExpressionWithBlock {
     Block |
     IfExpression |
+    MatchExpression |
     TryExpression
 }
 
@@ -163,29 +164,41 @@ IfExpression {
   kw<"if"> Expression Block (kw<"else"> ( IfExpression | Block ))?
 }
 
+MatchExpression {
+    kw<"match"> Expression "{" ( matchArm ( "," matchArm )* ","? )? "}"
+}
+
+matchArm {
+    (LiteralExpression | ( PrefixOp LiteralExpression ) | Ident ) FatArrow ( ExpressionWithoutBlock "," | ExpressionWithBlock )
+}
+
 TryExpression {
     kw<"try"> Block kw<"catch"> Ident Block
 }
 
 ExpressionWithoutBlock {
-    Number |
-    Boolean |
-    String |
+    LiteralExpression |
     VariableName |
-    kw<"null"> |
-    kw<"none"> |
-    ListLiteral |
-    ObjectLiteral |
-    FunctionLiteral |
     "(" Expression ")" |
     PrefixExpression |
-    RangeExpression |
     InfixExpression |
     AssignExpression |
     CallExpression |
     IndexExpression |
     MemberExpression |
     CastExpression
+}
+
+LiteralExpression {
+    Number
+    Boolean |
+    String |
+    ListLiteral |
+    ObjectLiteral |
+    FunctionLiteral |
+    kw<"null"> |
+    kw<"none"> |
+    RangeExpression
 }
 
 Boolean {
@@ -209,11 +222,11 @@ objectLiteralField {
 }
 
 FunctionLiteral {
-    kw<"fn"> Parameters ( "->" Type )? Block
+    kw<"fn"> Parameters ( Arrow Type )? Block
 }
 
 PrefixExpression {
-    !prefix ( Minus | Not | QuestionMark ) Expression
+    !prefix PrefixOp Expression
 }
 
 InfixExpression {
@@ -257,6 +270,12 @@ IndexExpression {
 
 CastExpression {
     Expression kw<"as"> Type
+}
+
+PrefixOp {
+    Minus |
+    Not |
+    QuestionMark
 }
 
 @skip { skip_token | LineComment | BlockComment }
