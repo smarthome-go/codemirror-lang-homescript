@@ -2,8 +2,15 @@ import { testTree } from '@lezer/generator/test'
 import { HomescriptLanguage } from './dist/index.js'
 
 let ast = HomescriptLanguage.parser.parse(`
-let a  = -1 - test + last;
+#[trigger on message(['foo/bar'])]
+event fn foo(topic: str, payload: str) {
+    
+}
 `)
+
+// $Driver = {
+//     @setting bool_setting: bool,
+// };
 
 let spec = ``
 

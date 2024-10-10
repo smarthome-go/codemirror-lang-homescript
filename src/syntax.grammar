@@ -26,11 +26,44 @@ Item {
     ImportItem |
     LetStatement |
     FunctionDefinition |
-    PubItem
+    PubItem |
+    TypeDefinition |
+    ImplBlock |
+    SingletonDefinition |
+    ( kw<"event"> FunctionDefinition ) |
+    Annotation
+}
+
+Annotation {
+    "#" "[" ( TriggerAnnotationItem )? ( "," TriggerAnnotationItem )* ( "," )?  "]"
+}
+
+TriggerAnnotationItem {
+    kw<"trigger"> TriggerConnective CallExpression
+}
+
+TriggerConnective {
+    "on" | "at" | "in"
 }
 
 PubItem {
     kw<"pub"> ( TypeDefinition | LetStatement | FunctionDefinition )
+}
+
+ImplBlock {
+   kw<"impl"> ImplTemplateIdent kw<"for"> SingletonIdent "{" ( ( kw<"pub"> )? FunctionDefinition )* "}"
+}
+
+SingletonIdent {
+    "$" Ident
+}
+
+ImplTemplateIdent {
+    Ident
+}
+
+SingletonDefinition {
+    SingletonIdent "=" objectType ";"
 }
 
 ImportItem {
@@ -45,7 +78,18 @@ ImportItem {
 }
 
 ImportItemCanditate {
-    (kw<"type"> TypeImport | Ident)
+    ( kw<"type"> TypeImport ) |
+    ( kw<"templ"> TemplImport ) |
+    ( kw<"trigger"> TriggerImport ) |
+    Ident
+}
+
+TemplImport {
+    Ident
+}
+
+TriggerImport {
+    Ident
 }
 
 TypeImport {
@@ -84,7 +128,15 @@ objectTypeFields {
 }
 
 objectTypeField {
-    (Ident | String) ":" Type
+    ObjectTypeFieldAnnotation? ObjectTypeFieldKey ":" Type
+}
+
+ObjectTypeFieldKey {
+    Ident | String
+}
+
+ObjectTypeFieldAnnotation {
+    ("@" Ident)
 }
 
 optionType {
