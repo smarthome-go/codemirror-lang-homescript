@@ -31,7 +31,7 @@ export const HomescriptLanguage = LRLanguage.define({
                 'ImportItem/ImportItemCanditate/TemplImport/Ident': t.namespace,
                 'ImportItem/ImportItemCanditate/TriggerImport/Ident': t.local(t.variableName),
                 "Annotation": t.separator,
-                "TriggerConnective": t.operatorKeyword, 
+                "TriggerConnective": t.operatorKeyword,
                 "ImplTemplateIdent/Ident": t.namespace,
                 "SingletonIdent/Ident": t.typeName,
                 'TypeDefinition/Ident': t.namespace,

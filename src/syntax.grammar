@@ -313,7 +313,7 @@ callArguments {
 }
 
 MemberExpression {
-    Expression !member "." Ident
+    Expression !member ( "." | "->" | "~>" ) Ident
 }
 
 IndexExpression {
